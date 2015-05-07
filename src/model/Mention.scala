@@ -11,7 +11,7 @@ object SurfaceType extends Enumeration {
 
 class Mention(c: Constituent) {
   var types: Set[SurfaceType.types] = Set()
-  var isTopLevel: Boolean
+  var isTopLevel: Boolean = false
   def isNamedEntity(): Boolean = types.contains(SurfaceType.NER)
   def setTopLevelEntity() = (isTopLevel = true)
 }

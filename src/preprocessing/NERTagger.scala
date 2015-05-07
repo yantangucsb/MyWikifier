@@ -46,6 +46,7 @@ class NERTagger {
     var output : String = "";
     try {
       var output = NETagPlain.tagData(data, t1, t2);
+      println(output);
     } catch {
       case ex : Exception => {
         println("Exception in NERing!");

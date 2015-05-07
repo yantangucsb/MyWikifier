@@ -13,7 +13,7 @@ object Main{
     var nerTagger : NERTagger = new NERTagger()
     print(lines)
     nerTagger.setUp()
-    print(nerTagger.tagData(lines))
+    nerTagger.tagData(lines)
     //var shallowparser = new ShallowParser("configs/NER.config")
     //shallowparser.performChunkerAndPos(lines)
   }                                               //> main: (args: Array[String])Unit

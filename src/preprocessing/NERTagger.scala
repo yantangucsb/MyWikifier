@@ -14,7 +14,7 @@ import edu.illinois.cs.cogcomp.LbjNer.ParsingProcessingData.PlainTextReader;
 import LBJ2.parse.LinkedVector;
 
 class NERTagger {
-  var CONFIG : String = "default.ner.config";
+  var CONFIG : String = "configs/NER.config";
   var t1 : NETaggerLevel1 = null;
   var t2 : NETaggerLevel2 = null;
   

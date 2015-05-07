@@ -4,6 +4,7 @@
 package preprocessing
 import scala.io._
 import scala.collection.mutable.MutableList
+import model.LinkingProblem
 
 
 object Main{
@@ -14,6 +15,7 @@ object Main{
     print(lines)
     nerTagger.setUp()
     nerTagger.tagData(lines)
+    var problem: LinkingProblem = new LinkingProblem(lines, args(0))
     //var shallowparser = new ShallowParser("configs/NER.config")
     //shallowparser.performChunkerAndPos(lines)
   }                                               //> main: (args: Array[String])Unit

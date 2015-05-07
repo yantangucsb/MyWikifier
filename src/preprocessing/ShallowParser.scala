@@ -28,10 +28,10 @@ class ShallowParser(pathToCofig: String) {
     if (!(input.trim().equals(""))) {
       var NEWordSentences: Vector[LinkedVector] = PlainTextReader.parseText(input)
       var i = 0
-      for (i <- 1 until NEWordSentences.size()) {
+      for (i <- 0 until NEWordSentences.size()) {
         var chunkerSentence: LinkedVector = new LinkedVector();
         var j = 0
-        for (j <- 1 until NEWordSentences.get(i).size()) {
+        for (j <- 0 until NEWordSentences.get(i).size()) {
           var t: Token = null;
           var word: Word = NEWordSentences.get(i).get(j).asInstanceOf[Word]
           if (j > 0)
@@ -44,7 +44,7 @@ class ShallowParser(pathToCofig: String) {
           chunkerSentence.get(j).previous = chunkerSentence.get(j - 1);
           chunkerSentence.get(j - 1).next = chunkerSentence.get(j);
         }
-        for (j <- 1 until chunkerSentence.size()) {
+        for (j <- 0 until chunkerSentence.size()) {
           //println(chunkerSentence.size())
           var w: Token = chunkerSentence.get(j).asInstanceOf[Token];
           chunkerTags += (chunker.discreteValue(w));
@@ -53,9 +53,9 @@ class ShallowParser(pathToCofig: String) {
           chunkerWords += w.form;
         }
       }
-      println(chunkerTags)
-      println(posTags)
-      println(chunkerWords)
+//      println(chunkerTags)
+//      println(posTags)
+//      println(chunkerWords)
     }
   }
 }

@@ -9,7 +9,7 @@ import scala.collection.mutable.MutableList
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConverters._
 
-class TextLabeler {
+object TextLabeler {
   def getLabeling(words: List[String], tags: List[String], input: String, labelerName: String): Labeling = {
     var quoteLocs: List[Int] = findQuotationLocations(input);
     var labels: List[Span] = List();

@@ -13,9 +13,9 @@ import edu.illinois.cs.cogcomp.LbjNer.LbjTagger.Parameters;
 import scala.collection.mutable.MutableList
 
 class ShallowParser(pathToCofig: String) {
-  var chunkerWords: MutableList[String] = MutableList()
-  var chunkerTags: MutableList[String] = MutableList()
-  var posTags: MutableList[String] = MutableList()
+  var chunkerWords: List[String] = List()
+  var chunkerTags: List[String] = List()
+  var posTags: List[String] = List()
   var chunker: Chunker = new Chunker
 
   try {
@@ -47,10 +47,10 @@ class ShallowParser(pathToCofig: String) {
         for (j <- 0 until chunkerSentence.size()) {
           //println(chunkerSentence.size())
           var w: Token = chunkerSentence.get(j).asInstanceOf[Token];
-          chunkerTags += (chunker.discreteValue(w));
+          chunkerTags = chunkerTags ++ List(chunker.discreteValue(w));
 //          println(chunker.discreteValue(w))
-          posTags += ("B-" + w.partOfSpeech); // this is to make the annotation consistent with NER and the chunker....
-          chunkerWords += w.form;
+          posTags = posTags ++ List("B-" + w.partOfSpeech); // this is to make the annotation consistent with NER and the chunker....
+          chunkerWords = chunkerWords ++ List(w.form);
         }
       }
 //      println(chunkerTags)

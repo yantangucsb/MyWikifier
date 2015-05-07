@@ -11,10 +11,6 @@ object Main{
   def main(args: Array[String]) {    
     val source = scala.io.Source.fromFile(args(0))
     val lines = try source.mkString finally source.close()
-    var nerTagger : NERTagger = new NERTagger()
-    print(lines)
-    nerTagger.setUp()
-    nerTagger.tagData(lines)
     var problem: LinkingProblem = new LinkingProblem(lines, args(0))
     //var shallowparser = new ShallowParser("configs/NER.config")
     //shallowparser.performChunkerAndPos(lines)

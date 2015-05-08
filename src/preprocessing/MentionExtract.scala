@@ -12,14 +12,13 @@ import scala.collection.JavaConverters._
 
 object MentionExtract {
   def extract(problem: LinkingProblem): List[Mention] = {
-    var NerConstituents: List[Constituent] = generateNerConstituents(problem.text)
-    var NerCandidateEntities: Map[String, Mention] = 
-      generateMention(NerTypes)(problem.text, NerConstituents)
-    var ChunkConstituents: List[Constituent] = generateChunkConstituents(problem.text)
-    var ChunkCandidateEntities: Map[String, Mention] =
-      generateMention(NerTypes)(problem.text, ChunkConstituents)
+    var NerConstituents: List[Constituent] = generateNerConstituents(problem)
+    var candidateEntities: Map[String, Mention] = Map()
+    candidateEntities = generateMention(NerTypes)(problem.text, NerConstituents, candidateEntities)
+    var ChunkConstituents: List[Constituent] = generateChunkConstituents(problem)
+    candidateEntities = generateMention(NerTypes)(problem.text, ChunkConstituents, candidateEntities)
     //Merger maps
-    for (e <- NerCandidateEntities.values) {
+    for (e <- candidateEntities.values) {
 
             if ((!e.isTopLevelMention() && GlobalParameters.stops.isStopword(e.surfaceForm.toLowerCase())) 
                     // Fast unlink
@@ -69,10 +68,10 @@ object MentionExtract {
         return res;
   }
   
-  def generateNerConstituents(text: String): List[Constituent] = {
+  def generateNerConstituents(problem: LinkingProblem): List[Constituent] = {
     var nerTagger: NERTagger = new NERTagger()
     nerTagger.setUp()
-    nerTagger.tagData(text)
+    nerTagger.tagData(problem.text)
 
     var constituents: List[Constituent] = List()
     //get label of ner tags
@@ -80,26 +79,22 @@ object MentionExtract {
     constituents
   }
   
-  def generateChunkConstituents(text: String): List[Constituent] = {
+  def generateChunkConstituents(problem: LinkingProblem): List[Constituent] = {
     var shallowparser = new ShallowParser("configs/NER.config")
-    shallowparser.performChunkerAndPos(text)
+    shallowparser.performChunkerAndPos(problem.text)
 
     var constituents: List[Constituent] = List()
     //get label of ner tags
-    var chunkerLabels: Labeling = TextLabeler.getLabeling(shallowparser.chunkerWords, shallowparser.chunkerTags, text, "IllinoisChunker")
+    var chunkerLabels: Labeling = TextLabeler.getLabeling(shallowparser.chunkerWords, shallowparser.chunkerTags, problem.text, "IllinoisChunker")
     var label: Iterator[Span] = chunkerLabels.getLabelsIterator().asScala
-    var ta: TextAnnotation = createAnnotation(text)
     while(label.hasNext){
       var span: Span = label.next();
-      var c: Constituent = makeConstituentFixTokenBoundaries(span.label, ViewNames.NER, ta, span.start, span.ending);
+      var c: Constituent = makeConstituentFixTokenBoundaries(span.label, ViewNames.NER, problem.ta, span.start, span.ending);
       if(c!=null) constituents = constituents ++ List(c);
     }
     constituents
   }
   
-  def createAnnotation(text: String): TextAnnotation = 
-    new TextAnnotation("fakeCorpus","fakeId", text,SentenceViewGenerators.LBJSentenceViewGenerator)
-
   def makeConstituentFixTokenBoundaries(label: String, viewName: String, ta: TextAnnotation, start: Int, end: Int): Constituent = {
     var e: Int = end - 1;
     if (e < start)
@@ -130,8 +125,7 @@ object MentionExtract {
     List(SurfaceType.NPSubchunk)
   }
   
-  def generateMention(types: Constituent => List[SurfaceType.types])(input: String, candidates: List[Constituent]): Map[String, Mention] = {
-    var entityMap: Map[String, Mention] = Map()
+  def generateMention(types: Constituent => List[SurfaceType.types])(input: String, candidates: List[Constituent], entityMap: Map[String, Mention]): Map[String, Mention] = {
     for (c <- candidates) {
       if (c.getStartSpan() < c.getEndSpan())
         try {

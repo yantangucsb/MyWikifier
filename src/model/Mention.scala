@@ -63,8 +63,7 @@ class Mention(c: Constituent, problem: LinkingProblem) {
         if(tokenId<=0)
             return true;
         var prevTokenId: Int = tokenId-1;
-        return ta.getSentenceId(tokenId) != ta.getSentenceId(prevTokenId)
-                || GlobalParameters.stops.isStopword(ta.getToken(prevTokenId).toLowerCase());
+        (ta.getSentenceId(tokenId) != ta.getSentenceId(prevTokenId)) || StopWords.isStopword(ta.getToken(prevTokenId).toLowerCase());
     }
   
   def hasLeftBoundary(): Boolean = {

@@ -18,11 +18,11 @@ class ShallowParser(pathToCofig: String) {
   var posTags: List[String] = List()
   var chunker: Chunker = new Chunker
 
-  try {
+/*  try {
     Parameters.readConfigAndLoadExternalData(pathToCofig);
   } catch {
     case ex: Exception => throw new Exception
-  }
+  }*/
   
   def performChunkerAndPos(input: String) = {
     if (!(input.trim().equals(""))) {

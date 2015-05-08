@@ -1,6 +1,8 @@
 package preprocessing
 
 import model._
+import wiki._
+import extractors._
 
 import edu.illinois.cs.cogcomp.edison.sentences.TokenizerUtilities.SentenceViewGenerators;
 import edu.illinois.cs.cogcomp.edison.sentences.ViewNames;
@@ -8,66 +10,69 @@ import edu.illinois.cs.cogcomp.edison.sentences.TextAnnotation;
 import edu.illinois.cs.cogcomp.edison.sentences.Constituent;
 import edu.illinois.cs.cogcomp.thrift.base.Labeling;
 import edu.illinois.cs.cogcomp.thrift.base.Span;
+
 import scala.collection.JavaConverters._
+import util.control.Breaks._
 
 object MentionExtract {
   def extract(problem: LinkingProblem): List[Mention] = {
     var NerConstituents: List[Constituent] = generateNerConstituents(problem)
     var candidateEntities: Map[String, Mention] = Map()
-    candidateEntities = generateMention(NerTypes)(problem.text, NerConstituents, candidateEntities)
+    candidateEntities = generateMention(NerTypes)(problem, NerConstituents, candidateEntities)
     var ChunkConstituents: List[Constituent] = generateChunkConstituents(problem)
-    candidateEntities = generateMention(NerTypes)(problem.text, ChunkConstituents, candidateEntities)
-    //Merger maps
-    for (e <- candidateEntities.values) {
+    candidateEntities = generateMention(ChunkTypes)(problem, ChunkConstituents, candidateEntities)
+    
+    println("The candidate mentions are:")
+    print(candidateEntities.values)
+    var res: List[Mention] = List()
+/*    for (e <- candidateEntities.values) {
+      if ((e.isTopLevelMention() || !StopWords.isStopword(e.surfaceForm.toLowerCase())) && !WikiAccess.isKnownUnlinkable(e.surfaceForm)) {
 
-            if ((!e.isTopLevelMention() && StopWords.isStopword(e.surfaceForm.toLowerCase())) 
-                    // Fast unlink
-                    || GlobalParameters.wikiAccess.isKnownUnlinkable(e.surfaceForm)) {
-                continue;
-            }
+        // problem is slow
+        var matchData: List[WikiMatchData] = CandidateGenerator.getGlobalCandidates(problem.ta, e);
 
-            // problem is slow
-            List<WikiMatchData> matchData = CandidateGenerator.getGlobalCandidates(ta, e);
+        // Here we allow zero candidate entities
+        if (matchData.size > 0 || e.isTopLevelMention()) {
 
-            // Here we allow zero candidate entities
-            if (matchData.size() > 0 
-                    || e.isTopLevelMention()
-                    || TitleNameIndexer.normalize(e.surfaceForm) != null) {
+          e.generateLocalContext(problem.text);
 
-                e.generateLocalContext(text, wikipedia);
+          e.candidates = List()
+          var firstLayer: List[WikiCandidate] = List()
+          for (wikiMatchData <- matchData) {
+            var candidate: WikiCandidate = new WikiCandidate(e, wikiMatchData);
+            firstLayer = firstLayer ++ List(candidate);
+          }
+          e.candidates = e.candidates ++ List(firstLayer);
 
-                e.candidates = Lists.newArrayList();
-                List<WikiCandidate> firstLayer = Lists.newArrayList();
-                for (WikiMatchData wikiMatchData : matchData) {
-                    WikiCandidate candidate = new WikiCandidate(e, wikiMatchData);
-                    firstLayer.add(candidate);
-                }
-                e.candidates.add(firstLayer);
-
-                // now mark the corresponding reference instance (if exists) that problem wikifiable
-                // entity tries to disambiguate it
-                if (refInstanceMap.containsKey(e.getPositionHashKey()))
-                    refInstanceMap.get(e.getPositionHashKey()).setAssignedEntity(e);
-                res.add(e);
-            } else {
-                // there was no wiki match data for the entity
-                if (manualEntities.contains(e)) {
-                    System.out.println("Important warning: the manually defined entity " + e.surfaceForm
-                            + " had 0 disambiguation candidates");
-                }
-
-            }
-        } // running on all potentially the wikifiable entitites
-
-        if (displayProgress) {
-            printProgress(res);
+          // now mark the corresponding reference instance (if exists) that problem wikifiable
+          // entity tries to disambiguate it
+          //if (refInstanceMap.containsKey(e.getPositionHashKey()))
+          //    refInstanceMap.get(e.getPositionHashKey()).setAssignedEntity(e);
+          res = res ++ List(e);
         }
+      } // running on all potentially the wikifiable entitites
+    }
 
-        System.out.println("Done constructing the Wikifiable entities");
-        expandNER(res);
-        return res;
+    System.out.println("Done constructing the Wikifiable entities");
+    expandNER(res);*/
+    res;
   }
   
+    def expandNER(entities: List[Mention]) {
+        
+        var nerSurfaces: Map[String,Set[SurfaceType.types]] = Map()
+        for(e <- entities){
+            if(e.isNamedEntity())
+                nerSurfaces += (e.surfaceForm) -> e.types;
+        }
+        
+        for(e <- entities){
+            if(!e.isNamedEntity() && e.isTopLevelMention() && nerSurfaces.contains(e.surfaceForm)){
+                e.types ++= nerSurfaces.get(e.surfaceForm).asInstanceOf[Set[SurfaceType.types]]
+            }
+        }
+    }
+    
   def generateNerConstituents(problem: LinkingProblem): List[Constituent] = {
     var nerTagger: NERTagger = new NERTagger()
     nerTagger.setUp()
@@ -131,7 +136,7 @@ object MentionExtract {
     List(SurfaceType.NPSubchunk)
   }
   
-  def generateMention(types: Constituent => List[SurfaceType.types])(input: String, candidates: List[Constituent], entityMap: Map[String, Mention]): Map[String, Mention] = {
+  def generateMention(types: Constituent => List[SurfaceType.types])(problem: LinkingProblem, candidates: List[Constituent], entityMap: Map[String, Mention]): Map[String, Mention] = {
     for (c <- candidates) {
       if (c.getStartSpan() < c.getEndSpan())
         try {

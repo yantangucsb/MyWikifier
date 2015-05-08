@@ -1,5 +1,7 @@
 package model
 
+import wiki._
+
 import org.apache.commons.lang3.StringUtils;
 
 import edu.illinois.cs.cogcomp.edison.sentences.Constituent;
@@ -23,7 +25,11 @@ class Mention(c: Constituent, problem: LinkingProblem) {
   var startTokenId = c.getStartSpan
   var endTokenId = c.getEndSpan
   
-
+  var candidates: List[List[WikiCandidate]] = null
+  
+  override def toString():String = {
+    surfaceForm mkString
+  }
   def isNamedEntity(): Boolean = types.contains(SurfaceType.NER)
   def setTopLevelEntity() = (isTopLevel = true)
   def isTopLevelMention(): Boolean = {
@@ -84,11 +90,15 @@ class Mention(c: Constituent, problem: LinkingProblem) {
         var nextToken: String = problem.ta.getToken(endTokenId);
         return !isCapitalized(nextToken);
   }
-  
+
   def isCapitalized(s: String): Boolean = {
-        if(s == null || s.length() == 0)
-          false
-        else
-          Character.isUpperCase(s.charAt(0));
-    }
+    if (s == null || s.length() == 0)
+      false
+    else
+      Character.isUpperCase(s.charAt(0));
+  }
+
+  def generateLocalContext(text: String) {
+
+  }
 }

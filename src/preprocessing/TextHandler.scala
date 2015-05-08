@@ -12,8 +12,9 @@ object Main{
   def main(args: Array[String]) {    
     val source = scala.io.Source.fromFile(args(0))
     val lines = try source.mkString finally source.close()
-    //var problem: LinkingProblem = new LinkingProblem(lines, args(0))
-    StopWords.loadfile()
+    //StopWords.loadfile()
+    var problem: LinkingProblem = new LinkingProblem(lines, args(0))
+    
     //var nerTagger = new NERTagger()
     //nerTagger.setUp();
     //nerTagger.tagData(lines)

@@ -57,8 +57,8 @@ class NERTagger {
     for (i <- 0 until sentences.size()) {
         for (j <- 0 until sentences.get(i).size()) {
             var w : NEWord = sentences.get(i).get(j).asInstanceOf[NEWord]
-            println(w.form)
-            println(w.neTypeLevel2)
+//            println(w.form)
+//            println(w.neTypeLevel2)
             resultWords = resultWords ++ List(w.form);
             resultPredictions = resultPredictions ++ List(w.neTypeLevel2);
         }

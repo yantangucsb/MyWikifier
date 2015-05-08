@@ -22,10 +22,10 @@ object MentionExtract {
     var ChunkConstituents: List[Constituent] = generateChunkConstituents(problem)
     candidateEntities = generateMention(ChunkTypes)(problem, ChunkConstituents, candidateEntities)
     
-    println("The candidate mentions are:")
-    print(candidateEntities.values)
+//    println("The candidate mentions are:")
+//    println(candidateEntities.values mkString "\n")
     var res: List[Mention] = List()
-/*    for (e <- candidateEntities.values) {
+    for (e <- candidateEntities.values) {
       if ((e.isTopLevelMention() || !StopWords.isStopword(e.surfaceForm.toLowerCase())) && !WikiAccess.isKnownUnlinkable(e.surfaceForm)) {
 
         // problem is slow
@@ -54,7 +54,7 @@ object MentionExtract {
     }
 
     System.out.println("Done constructing the Wikifiable entities");
-    expandNER(res);*/
+    expandNER(res);
     res;
   }
   
@@ -135,30 +135,32 @@ object MentionExtract {
   def ChunkTypes(c: Constituent): List[SurfaceType.types] = {
     List(SurfaceType.NPSubchunk)
   }
-  
+
   def generateMention(types: Constituent => List[SurfaceType.types])(problem: LinkingProblem, candidates: List[Constituent], entityMap: Map[String, Mention]): Map[String, Mention] = {
+    var newEntityMap = entityMap
     for (c <- candidates) {
       if (c.getStartSpan() < c.getEndSpan())
         try {
           var key: String = getPositionHashKey(c);
-          if (entityMap.contains(key)) {
-            var existingEntity: Mention = entityMap.apply(key);
+          if (newEntityMap.contains(key)) {
+            var existingEntity: Mention = newEntityMap.apply(key);
             if (existingEntity.types.size == 0) {
               existingEntity.types = existingEntity.types ++ types(c);
             }
           } else {
             var e: Mention = new Mention(c, problem);
-            e.types = e.types ++ types(c);
+            e.types ++= types(c);
             if (e.isNamedEntity())
               e.setTopLevelEntity();
-            entityMap == entityMap + ((key, e));
+            newEntityMap += (key) -> e
           }
         } catch {
           case ex: Exception => throw new Exception("Warning -- a nasty exception caught:");
         }
     }
-    entityMap
+    newEntityMap
   }
+  
   def getPositionHashKey(c: Constituent): String = {
     var start: Int = c.getStartCharOffset
     var len: Int = c.getEndCharOffset

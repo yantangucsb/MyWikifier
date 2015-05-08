@@ -28,7 +28,7 @@ class Mention(c: Constituent, problem: LinkingProblem) {
   var candidates: List[List[WikiCandidate]] = null
   
   override def toString():String = {
-    surfaceForm mkString
+    surfaceForm
   }
   def isNamedEntity(): Boolean = types.contains(SurfaceType.NER)
   def setTopLevelEntity() = (isTopLevel = true)

@@ -75,7 +75,13 @@ object MentionExtract {
 
     var constituents: List[Constituent] = List()
     //get label of ner tags
-    
+    var nerLabels: Labeling = TextLabeler.getLabeling(nerTagger.resultWords, nerTagger.resultPredictions, problem.text, "IllinoisNER.2.1")
+    var label: Iterator[Span] = nerLabels.getLabelsIterator().asScala
+    while(label.hasNext){
+      var span: Span = label.next();
+      var c: Constituent = makeConstituentFixTokenBoundaries(span.label, ViewNames.NER, problem.ta, span.start, span.ending);
+      if(c!=null) constituents = constituents ++ List(c);
+    }
     constituents
   }
   
@@ -89,7 +95,7 @@ object MentionExtract {
     var label: Iterator[Span] = chunkerLabels.getLabelsIterator().asScala
     while(label.hasNext){
       var span: Span = label.next();
-      var c: Constituent = makeConstituentFixTokenBoundaries(span.label, ViewNames.NER, problem.ta, span.start, span.ending);
+      var c: Constituent = makeConstituentFixTokenBoundaries(span.label, ViewNames.SHALLOW_PARSE, problem.ta, span.start, span.ending);
       if(c!=null) constituents = constituents ++ List(c);
     }
     constituents
@@ -136,7 +142,7 @@ object MentionExtract {
               existingEntity.types = existingEntity.types ++ types(c);
             }
           } else {
-            var e: Mention = new Mention(c);
+            var e: Mention = new Mention(c, problem);
             e.types = e.types ++ types(c);
             if (e.isNamedEntity())
               e.setTopLevelEntity();

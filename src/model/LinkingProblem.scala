@@ -1,7 +1,9 @@
 package model
 
 import preprocessing._
-import model.SurfaceType
+import model._
+import edu.illinois.cs.cogcomp.edison.sentences.TextAnnotation;
+
 
 import edu.illinois.cs.cogcomp.edison.sentences.TokenizerUtilities.SentenceViewGenerators;
 import edu.illinois.cs.cogcomp.edison.sentences.ViewNames;
@@ -14,6 +16,12 @@ import scala.collection.JavaConverters._
 class LinkingProblem(input: String, filename: String) {
   var sourceFilename: String = filename
   var text: String = input
+  var ta: TextAnnotation = createAnnotation(text)
   //TF_IDF?
   var compponents: List[Mention] = MentionExtract.extract(this)
+  
+  def createAnnotation(text: String): TextAnnotation = {
+      new TextAnnotation("fakeCorpus","fakeId", text,SentenceViewGenerators.LBJSentenceViewGenerator);
+  }
 }
+

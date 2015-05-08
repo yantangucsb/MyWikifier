@@ -12,10 +12,10 @@ import scala.collection.JavaConverters._
 
 object MentionExtract {
   def extract(problem: LinkingProblem): List[Mention] = {
-    var NerConstituents: List[Constituent] = generateNerConstituents(problem.text)
+    var NerConstituents: List[Constituent] = generateNerConstituents(problem)
     var candidateEntities: Map[String, Mention] = Map()
     candidateEntities = generateMention(NerTypes)(problem.text, NerConstituents, candidateEntities)
-    var ChunkConstituents: List[Constituent] = generateChunkConstituents(problem.text)
+    var ChunkConstituents: List[Constituent] = generateChunkConstituents(problem)
     candidateEntities = generateMention(NerTypes)(problem.text, ChunkConstituents, candidateEntities)
     //Merger maps
     for (e <- candidateEntities.values) {
@@ -68,10 +68,10 @@ object MentionExtract {
         return res;
   }
   
-  def generateNerConstituents(text: String): List[Constituent] = {
+  def generateNerConstituents(problem: LinkingProblem): List[Constituent] = {
     var nerTagger: NERTagger = new NERTagger()
     nerTagger.setUp()
-    nerTagger.tagData(text)
+    nerTagger.tagData(problem.text)
 
     var constituents: List[Constituent] = List()
     //get label of ner tags
@@ -79,26 +79,22 @@ object MentionExtract {
     constituents
   }
   
-  def generateChunkConstituents(text: String): List[Constituent] = {
+  def generateChunkConstituents(problem: LinkingProblem): List[Constituent] = {
     var shallowparser = new ShallowParser("configs/NER.config")
-    shallowparser.performChunkerAndPos(text)
+    shallowparser.performChunkerAndPos(problem.text)
 
     var constituents: List[Constituent] = List()
     //get label of ner tags
-    var chunkerLabels: Labeling = TextLabeler.getLabeling(shallowparser.chunkerWords, shallowparser.chunkerTags, text, "IllinoisChunker")
+    var chunkerLabels: Labeling = TextLabeler.getLabeling(shallowparser.chunkerWords, shallowparser.chunkerTags, problem.text, "IllinoisChunker")
     var label: Iterator[Span] = chunkerLabels.getLabelsIterator().asScala
-    var ta: TextAnnotation = createAnnotation(text)
     while(label.hasNext){
       var span: Span = label.next();
-      var c: Constituent = makeConstituentFixTokenBoundaries(span.label, ViewNames.NER, ta, span.start, span.ending);
+      var c: Constituent = makeConstituentFixTokenBoundaries(span.label, ViewNames.NER, problem.ta, span.start, span.ending);
       if(c!=null) constituents = constituents ++ List(c);
     }
     constituents
   }
   
-  def createAnnotation(text: String): TextAnnotation = 
-    new TextAnnotation("fakeCorpus","fakeId", text,SentenceViewGenerators.LBJSentenceViewGenerator)
-
   def makeConstituentFixTokenBoundaries(label: String, viewName: String, ta: TextAnnotation, start: Int, end: Int): Constituent = {
     var e: Int = end - 1;
     if (e < start)

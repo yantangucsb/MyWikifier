@@ -12,6 +12,9 @@ object Main{
     val source = scala.io.Source.fromFile(args(0))
     val lines = try source.mkString finally source.close()
     var problem: LinkingProblem = new LinkingProblem(lines, args(0))
+    //var nerTagger = new NERTagger()
+    //nerTagger.setUp();
+    //nerTagger.tagData(lines)
     //var shallowparser = new ShallowParser("configs/NER.config")
     //shallowparser.performChunkerAndPos(lines)
   }                                               //> main: (args: Array[String])Unit

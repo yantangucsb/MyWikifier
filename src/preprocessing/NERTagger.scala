@@ -6,17 +6,21 @@ import java.util.Vector;
 import edu.illinois.cs.cogcomp.LbjNer.LbjFeatures.NETaggerLevel1;
 import edu.illinois.cs.cogcomp.LbjNer.LbjFeatures.NETaggerLevel2;
 import edu.illinois.cs.cogcomp.LbjNer.LbjTagger.Data;
+import edu.illinois.cs.cogcomp.LbjNer.LbjTagger.NEWord;
 import edu.illinois.cs.cogcomp.LbjNer.LbjTagger.NERDocument;
-import edu.illinois.cs.cogcomp.LbjNer.LbjTagger.NETagPlain;
 import edu.illinois.cs.cogcomp.LbjNer.LbjTagger.Parameters;
 import edu.illinois.cs.cogcomp.LbjNer.LbjTagger.ParametersForLbjCode;
 import edu.illinois.cs.cogcomp.LbjNer.ParsingProcessingData.PlainTextReader;
+import edu.illinois.cs.cogcomp.LbjNer.ExpressiveFeatures.ExpressiveFeaturesAnnotator;
+import edu.illinois.cs.cogcomp.LbjNer.InferenceMethods.Decoder;
 import LBJ2.parse.LinkedVector;
 
 class NERTagger {
   var CONFIG : String = "configs/NER.config";
   var t1 : NETaggerLevel1 = null;
   var t2 : NETaggerLevel2 = null;
+  var resultWords : List[String] = List();
+  var resultPredictions : List[String] = List();
   
   //Before NER
   def setUp() : Unit = {
@@ -38,21 +42,34 @@ class NERTagger {
   }
   
   //NER
-  def tagData(text : String) : Map[String, String] = {
-    var NERCollection : Map[String, String] = Map()
-    
+  def tagData(text : String) : Unit = { 
     var sentences : Vector[LinkedVector] = PlainTextReader.parseText(text)
     var data : Data = new Data(new NERDocument(sentences, "input"))
     var output : String = "";
-    try {
+    /*try {
       var output = NETagPlain.tagData(data, t1, t2);
       println(output);
     } catch {
       case ex : Exception => {
         println("Exception in NERing!");
       }
+    }*/
+    try {
+      ExpressiveFeaturesAnnotator.annotate(data);
+      Decoder.annotateDataBIO(data, t1, t2);
+    } catch {
+      case ex: Exception => {
+      ex.printStackTrace();
+      }
     }
-    return NERCollection
+    for (i <- 0 until sentences.size()) {
+        for (j <- 0 until sentences.get(i).size()) {
+            var w : NEWord = sentences.get(i).get(j).asInstanceOf[NEWord]
+            println(w.form)
+            println(w.neTypeLevel2)
+            resultWords = resultWords ++ List(w.form);
+            resultPredictions = resultPredictions ++ List(w.neTypeLevel2);
+        }
+    }
   }
-
 }

@@ -21,6 +21,7 @@ class Mention(c: Constituent, problem: LinkingProblem) {
   var end = c.getEndCharOffset
   var charStart = start
   var startTokenId = c.getStartSpan
+  var endTokenId = c.getEndSpan
   
 
   def isNamedEntity(): Boolean = types.contains(SurfaceType.NER)
@@ -34,7 +35,7 @@ class Mention(c: Constituent, problem: LinkingProblem) {
       isTopLevel = (hasLeftBoundary() && hasRightBoundary())
     }
     setLevel = true;
-    isToplevel
+    isTopLevel
   }
   
   def isAllCaps(): Boolean = {
@@ -51,7 +52,7 @@ class Mention(c: Constituent, problem: LinkingProblem) {
     }
     
     for(s <- tokens){
-      if(!WordFeatures.isCapitalized(s)){
+      if(!isCapitalized(s)){
         false;
       }
     }
@@ -66,22 +67,29 @@ class Mention(c: Constituent, problem: LinkingProblem) {
                 || GlobalParameters.stops.isStopword(ta.getToken(prevTokenId).toLowerCase());
     }
   
-  def hasLeftBoundary(){
-      if( !WordFeatures.isCapitalized(surfaceForm))
-          return false;
-      if(startTokenId == 0 || isFirstTokenInSentence(startTokenId, parentProblem.ta))
-          return true;
-      String previousToken = parentProblem.ta.getToken(startTokenId-1);
-      char lastChar = previousToken.charAt(previousToken.length()-1);
-      return !WordFeatures.isCapitalized(previousToken) || !Character.isLetterOrDigit(lastChar);
+  def hasLeftBoundary(): Boolean = {
+      if( !isCapitalized(surfaceForm))
+          false;
+      if(startTokenId == 0 || isFirstTokenInSentence(startTokenId, problem.ta))
+          true;
+      var previousToken: String = problem.ta.getToken(startTokenId-1);
+      var lastChar: Char = previousToken.charAt(previousToken.length()-1);
+      !isCapitalized(previousToken) || !Character.isLetterOrDigit(lastChar);
   }
   
-  public boolean hasRightBoundary(){
-      if( !WordFeatures.isCapitalized(surfaceForm))
-            return false;
-        if(endTokenId >= parentProblem.ta.getTokens().length-1)
+  def hasRightBoundary(): Boolean = {
+      if( !isCapitalized(surfaceForm))
+            false;
+        if(endTokenId >= problem.ta.getTokens().length-1)
             return true;
-        String nextToken = parentProblem.ta.getToken(endTokenId);
-        return !WordFeatures.isCapitalized(nextToken);
+        var nextToken: String = problem.ta.getToken(endTokenId);
+        return !isCapitalized(nextToken);
   }
+  
+  def isCapitalized(s: String): Boolean = {
+        if(s == null || s.length() == 0)
+          false
+        else
+          Character.isUpperCase(s.charAt(0));
+    }
 }

@@ -46,14 +46,6 @@ class NERTagger {
     var sentences : Vector[LinkedVector] = PlainTextReader.parseText(text)
     var data : Data = new Data(new NERDocument(sentences, "input"))
     var output : String = "";
-    /*try {
-      var output = NETagPlain.tagData(data, t1, t2);
-      println(output);
-    } catch {
-      case ex : Exception => {
-        println("Exception in NERing!");
-      }
-    }*/
     try {
       ExpressiveFeaturesAnnotator.annotate(data);
       Decoder.annotateDataBIO(data, t1, t2);

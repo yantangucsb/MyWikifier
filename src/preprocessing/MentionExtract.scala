@@ -20,7 +20,7 @@ object MentionExtract {
     //Merger maps
     for (e <- candidateEntities.values) {
 
-            if ((!e.isTopLevelMention() && stops.isStopword(e.surfaceForm.toLowerCase())) 
+            if ((!e.isTopLevelMention() && StopWords.isStopword(e.surfaceForm.toLowerCase())) 
                     // Fast unlink
                     || GlobalParameters.wikiAccess.isKnownUnlinkable(e.surfaceForm)) {
                 continue;

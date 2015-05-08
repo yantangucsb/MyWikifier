@@ -2,17 +2,21 @@ package model
 
 import scala.io._
 
-class StopWords(filename: String) {
+object StopWords {
   var stopWords : Set[String] = Set();
-  var path2File : String = filename;
+  var loaded : Boolean = false;
+  var path2File : String = "data/Other_Data/stopwords_big"
   
   def loadfile() : Unit = {
-    for(line <- scala.io.Source.fromFile(path2File).getLines())
-      stopWords = stopWords ++ Set(line)
-    println(stopWords)
+      for(line <- scala.io.Source.fromFile(path2File).getLines())
+        stopWords = stopWords ++ Set(line)
+    //println(stopWords)
+      loaded = true
   }
 
   def isStopword(s : String) : Boolean = {
+    if (!loaded)
+      loadfile()
     stopWords.contains(s);
   }
 

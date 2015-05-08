@@ -13,13 +13,12 @@ import scala.collection.JavaConverters._
 object MentionExtract {
   def extract(problem: LinkingProblem): List[Mention] = {
     var NerConstituents: List[Constituent] = generateNerConstituents(problem.text)
-    var NerCandidateEntities: Map[String, Mention] = 
-      generateMention(NerTypes)(problem.text, NerConstituents)
+    var candidateEntities: Map[String, Mention] = Map()
+    candidateEntities = generateMention(NerTypes)(problem.text, NerConstituents, candidateEntities)
     var ChunkConstituents: List[Constituent] = generateChunkConstituents(problem.text)
-    var ChunkCandidateEntities: Map[String, Mention] =
-      generateMention(NerTypes)(problem.text, ChunkConstituents)
+    candidateEntities = generateMention(NerTypes)(problem.text, ChunkConstituents, candidateEntities)
     //Merger maps
-    for (e <- NerCandidateEntities.values) {
+    for (e <- candidateEntities.values) {
 
             if ((!e.isTopLevelMention() && GlobalParameters.stops.isStopword(e.surfaceForm.toLowerCase())) 
                     // Fast unlink
@@ -130,8 +129,7 @@ object MentionExtract {
     List(SurfaceType.NPSubchunk)
   }
   
-  def generateMention(types: Constituent => List[SurfaceType.types])(input: String, candidates: List[Constituent]): Map[String, Mention] = {
-    var entityMap: Map[String, Mention] = Map()
+  def generateMention(types: Constituent => List[SurfaceType.types])(input: String, candidates: List[Constituent], entityMap: Map[String, Mention]): Map[String, Mention] = {
     for (c <- candidates) {
       if (c.getStartSpan() < c.getEndSpan())
         try {

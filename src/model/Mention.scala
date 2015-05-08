@@ -44,13 +44,13 @@ class Mention(c: Constituent, problem: LinkingProblem) {
     // First determinant is not allowed when context is available
     if(tokens.length > 0
             && (isFirstTokenInSentence(startTokenId, problem.ta))
-            && ("A".equals(tokens[0]) || "The".equals(tokens[0]))
+            && ("A" == tokens(0) || "The" == (tokens(0)))
            )
     {
       false
     }
     
-    for(String s:tokens){
+    for(s <- tokens){
       if(!WordFeatures.isCapitalized(s)){
         false;
       }
@@ -61,7 +61,7 @@ class Mention(c: Constituent, problem: LinkingProblem) {
   def isFirstTokenInSentence(tokenId: Int, ta: TextAnnotation): Boolean = {
         if(tokenId<=0)
             return true;
-        int prevTokenId = tokenId-1;
+        var prevTokenId: Int = tokenId-1;
         return ta.getSentenceId(tokenId) != ta.getSentenceId(prevTokenId)
                 || GlobalParameters.stops.isStopword(ta.getToken(prevTokenId).toLowerCase());
     }

@@ -18,8 +18,8 @@ class LinkingProblem(input: String, filename: String) {
   var text: String = input
   var ta: TextAnnotation = createAnnotation(text)
   //TF_IDF?
-  var compponents: List[Mention] = MentionExtract.extract(this)
-  
+  var components: List[Mention] = MentionExtract.extract(this)
+  println(components)
   def createAnnotation(text: String): TextAnnotation = {
       new TextAnnotation("fakeCorpus","fakeId", text,SentenceViewGenerators.LBJSentenceViewGenerator);
   }

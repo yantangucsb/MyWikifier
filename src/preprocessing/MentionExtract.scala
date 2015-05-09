@@ -25,6 +25,7 @@ object MentionExtract {
 //    println("The candidate mentions are:")
 //    println(candidateEntities.values mkString "\n")
     var res: List[Mention] = List()
+    WikiAccess.initialize
     for (e <- candidateEntities.values) {
       if ((e.isTopLevelMention() || !StopWords.isStopword(e.surfaceForm.toLowerCase())) && !WikiAccess.isKnownUnlinkable(e.surfaceForm)) {
 

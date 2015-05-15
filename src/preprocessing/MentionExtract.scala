@@ -1,7 +1,7 @@
 package preprocessing
 
 import model._
-import wiki._
+import wiki.WikiProcess
 import extractors._
 
 import edu.illinois.cs.cogcomp.edison.sentences.TokenizerUtilities.SentenceViewGenerators;
@@ -10,27 +10,31 @@ import edu.illinois.cs.cogcomp.edison.sentences.TextAnnotation;
 import edu.illinois.cs.cogcomp.edison.sentences.Constituent;
 import edu.illinois.cs.cogcomp.thrift.base.Labeling;
 import edu.illinois.cs.cogcomp.thrift.base.Span;
+import edu.illinois.cs.cogcomp.wikifier.models.extractors.CandidateGenerator;
+import edu.illinois.cs.cogcomp.wikifier.wiki.access.WikiAccess;
+
 
 import scala.collection.JavaConverters._
 import util.control.Breaks._
 
+
 object MentionExtract {
-  def extract(problem: LinkingProblem): List[Mention] = {
+  def extract(problem: EntityLinkProblem): List[TextMention] = {
     var NerConstituents: List[Constituent] = generateNerConstituents(problem)
-    var candidateEntities: Map[String, Mention] = Map()
+    var candidateEntities: Map[String, TextMention] = Map()
     candidateEntities = generateMention(NerTypes)(problem, NerConstituents, candidateEntities)
     var ChunkConstituents: List[Constituent] = generateChunkConstituents(problem)
     candidateEntities = generateMention(ChunkTypes)(problem, ChunkConstituents, candidateEntities)
     
 //    println("The candidate mentions are:")
 //    println(candidateEntities.values mkString "\n")
-    var res: List[Mention] = List()
-    WikiAccess.initialize
+    var res: List[TextMention] = List()
+    WikiProcess.initialize("data/Lucene4Index")
     for (e <- candidateEntities.values) {
-      if ((e.isTopLevelMention() || !StopWords.isStopword(e.surfaceForm.toLowerCase())) && !WikiAccess.isKnownUnlinkable(e.surfaceForm)) {
+      if ((e.isTopLevelMention() || !StopWords.isStopword(e.surfaceForm.toLowerCase())) && !WikiProcess.isKnownUnlinkable(e.surfaceForm)) {
 
         // problem is slow
-        var matchData: List[WikiMatchData] = CandidateGenerator.getGlobalCandidates(problem.ta, e);
+        var matchData = CandidateGenerator.getGlobalCandidates(problem.ta, e.asInstanceOf).asScala;
 
         // Here we allow zero candidate entities
         if (matchData.size > 0 || e.isTopLevelMention()) {
@@ -59,7 +63,7 @@ object MentionExtract {
     res;
   }
   
-    def expandNER(entities: List[Mention]) {
+    def expandNER(entities: List[TextMention]) {
         
         var nerSurfaces: Map[String,Set[SurfaceType.types]] = Map()
         for(e <- entities){
@@ -74,7 +78,7 @@ object MentionExtract {
         }
     }
     
-  def generateNerConstituents(problem: LinkingProblem): List[Constituent] = {
+  def generateNerConstituents(problem: EntityLinkProblem): List[Constituent] = {
     var nerTagger: NERTagger = new NERTagger()
     nerTagger.setUp()
     nerTagger.tagData(problem.text)
@@ -91,7 +95,7 @@ object MentionExtract {
     constituents
   }
   
-  def generateChunkConstituents(problem: LinkingProblem): List[Constituent] = {
+  def generateChunkConstituents(problem: EntityLinkProblem): List[Constituent] = {
     var shallowparser = new ShallowParser("configs/NER.config")
     shallowparser.performChunkerAndPos(problem.text)
 
@@ -137,19 +141,19 @@ object MentionExtract {
     List(SurfaceType.NPSubchunk)
   }
 
-  def generateMention(types: Constituent => List[SurfaceType.types])(problem: LinkingProblem, candidates: List[Constituent], entityMap: Map[String, Mention]): Map[String, Mention] = {
+  def generateMention(types: Constituent => List[SurfaceType.types])(problem: EntityLinkProblem, candidates: List[Constituent], entityMap: Map[String, TextMention]): Map[String, TextMention] = {
     var newEntityMap = entityMap
     for (c <- candidates) {
       if (c.getStartSpan() < c.getEndSpan())
         try {
           var key: String = getPositionHashKey(c);
           if (newEntityMap.contains(key)) {
-            var existingEntity: Mention = newEntityMap.apply(key);
+            var existingEntity: TextMention = newEntityMap.apply(key);
             if (existingEntity.types.size == 0) {
               existingEntity.types = existingEntity.types ++ types(c);
             }
           } else {
-            var e: Mention = new Mention(c, problem);
+            var e: TextMention = new TextMention(c, problem);
             e.types ++= types(c);
             if (e.isNamedEntity())
               e.setTopLevelEntity();

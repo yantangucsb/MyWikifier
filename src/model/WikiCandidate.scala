@@ -2,8 +2,9 @@ package model
 
 import wiki._
 
-class WikiCandidate(mention: Mention, matchData: WikiMatchData) {
-  var titleName: String = matchData.getTitleName()
-  var menttionToDisambiguate: Mention = mention
+import edu.illinois.cs.cogcomp.wikifier.wiki.access.WikiAccess.WikiMatchData;
+
+class WikiCandidate(mention: TextMention, matchData: WikiMatchData) {
+  var menttionToDisambiguate: TextMention = mention
   var wikiData = matchData
 }

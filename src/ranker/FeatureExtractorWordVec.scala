@@ -1,0 +1,29 @@
+package ranker
+
+import model._
+import edu.illinois.cs.cogcomp.wikifier.inference.features.FeatureExtractorInterface
+import edu.illinois.cs.cogcomp.wikifier.models.Mention;
+import edu.illinois.cs.cogcomp.wikifier.models.LinkingProblem
+
+import scala.collection.JavaConverters._
+
+class FeatureExtractorWordVec(_extractorName: String, inTraining: Boolean, pathToSaves: String) extends FeatureExtractorInterface(_extractorName, inTraining, pathToSaves) {
+  @throws(classOf[Exception])
+  def extractFeatures(problem: LinkingProblem) {
+    var lastTime: Long = System.currentTimeMillis();
+    for(i <- 0 until problem.components.size()){
+      extractFeatures(problem, i)
+    }
+    featureExtractionTime += System.currentTimeMillis()-lastTime;
+    System.out.println( System.currentTimeMillis()-lastTime+" milliseconds elapsed extracting features for the level: "+extractorName);
+  }
+  
+  @throws(classOf[Exception])
+  def extractFeatures(problem: LinkingProblem, componentId: Int){
+    var component: Mention = problem.components.get(componentId)
+    var lastLevel = component.getLastPredictionLevel().asScala
+    for(candidate <- lastLevel){
+      
+    }
+  }
+}

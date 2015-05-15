@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import edu.illinois.cs.cogcomp.edison.sentences.Constituent;
 import edu.illinois.cs.cogcomp.edison.sentences.TextAnnotation;
+import edu.illinois.cs.cogcomp.wikifier.models.Mention
 
 object SurfaceType extends Enumeration {
   type types = Value
@@ -14,7 +15,7 @@ object SurfaceType extends Enumeration {
   def getNERTypes(): Set[types] = NERTypes
 }
 
-class Mention(c: Constituent, problem: LinkingProblem) {
+class TextMention(c: Constituent, problem: EntityLinkProblem) {
   var types: Set[SurfaceType.types] = Set()
   var isTopLevel: Boolean = false
   var setLevel: Boolean = false

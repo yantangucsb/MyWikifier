@@ -1,6 +1,10 @@
 package wiki
 
 class WikiPage(index: Int, surfaceForm: String) {
+  //Most of these members should loaded from file
+  //Not all the members should be loaded
+  //When training: no vec
+  //When testing: no left or right context
   val id: Int = index
   val name: String = surfaceForm
   var intLink: List[WikiPage] = null;

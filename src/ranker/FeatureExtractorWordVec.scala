@@ -1,6 +1,7 @@
 package ranker
 
 import model._
+import wiki.WikiPages
 import edu.illinois.cs.cogcomp.wikifier.inference.features.FeatureExtractorInterface
 import edu.illinois.cs.cogcomp.wikifier.models.Mention;
 import edu.illinois.cs.cogcomp.wikifier.models.LinkingProblem
@@ -22,8 +23,11 @@ class FeatureExtractorWordVec(_extractorName: String, inTraining: Boolean, pathT
   def extractFeatures(problem: LinkingProblem, componentId: Int){
     var component: Mention = problem.components.get(componentId)
     var lastLevel = component.getLastPredictionLevel().asScala
-    for(candidate <- lastLevel){
-      
+//    var vecScore: Array[Double] = new Array(lastLevel.size)
+    for(i <- 0 until lastLevel.size){
+      var candidate = lastLevel.apply(i)
+      val score = WikiPages.getScore(candidate)
+      candidate.otherFeatures.addFeature("ContextSimlarity", score)
     }
   }
 }

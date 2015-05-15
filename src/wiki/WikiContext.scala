@@ -1,6 +1,8 @@
 package wiki
 import java.io._
 
+import edu.illinois.cs.cogcomp.wikifier.models.WikiCandidate;
+
 object WikiPages {
   var id2WikiPage: Map[Int, WikiPage] = null
   var SurfaceForm2Id: Map[String, Int] = null
@@ -17,5 +19,9 @@ object WikiPages {
     val bw = new BufferedWriter(new FileWriter(file))
     bw.write(trainText)
     bw.close()
+  }
+  
+  def getScore(candidate: WikiCandidate): Double = {
+    0
   }
 }
